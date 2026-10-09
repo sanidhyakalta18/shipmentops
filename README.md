@@ -1,233 +1,128 @@
-# Full-Stack Python Chatbot with LangGraph
+# ShipmentOps
 
-[![CI](https://github.com/langchain-ai/langgraph-fullstack-python/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/langchain-ai/langgraph-fullstack-python/actions/workflows/unit-tests.yml)
-[![Integration Tests](https://github.com/langchain-ai/langgraph-fullstack-python/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/langchain-ai/langgraph-fullstack-python/actions/workflows/integration-tests.yml)
-[![Open in - LangGraph Studio](https://img.shields.io/badge/Open_in-LangGraph_Studio-00324d.svg?logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4NS4zMzMiIGhlaWdodD0iODUuMzMzIiB2ZXJzaW9uPSIxLjAiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTEzIDcuOGMtNi4zIDMuMS03LjEgNi4zLTYuOCAyNS43LjQgMjQuNi4zIDI0LjUgMjUuOSAyNC41QzU3LjUgNTggNTggNTcuNSA1OCAzMi4zIDU4IDcuMyA1Ni43IDYgMzIgNmMtMTIuOCAwLTE2LjEuMy0xOSAxLjhtMzcuNiAxNi42YzIuOCAyLjggMy40IDQuMiAzLjQgNy42cy0uNiA0LjgtMy40IDcuNkw0Ny4yIDQzSDE2LjhsLTMuNC0zLjRjLTQuOC00LjgtNC44LTEwLjQgMC0xNS4ybDMuNC0zLjRoMzAuNHoiLz48cGF0aCBkPSJNMTguOSAyNS42Yy0xLjEgMS4zLTEgMS43LjQgMi41LjkuNiAxLjcgMS44IDEuNyAyLjcgMCAxIC43IDIuOCAxLjYgNC4xIDEuNCAxLjkgMS40IDIuNS4zIDMuMi0xIC42LS42LjkgMS40LjkgMS41IDAgMi43LS41IDIuNy0xIDAtLjYgMS4xLS44IDIuNi0uNGwyLjYuNy0xLjgtMi45Yy01LjktOS4zLTkuNC0xMi4zLTExLjUtOS44TTM5IDI2YzAgMS4xLS45IDIuNS0yIDMuMi0yLjQgMS41LTIuNiAzLjQtLjUgNC4yLjguMyAyIDEuNyAyLjUgMy4xLjYgMS41IDEuNCAyLjMgMiAyIDEuNS0uOSAxLjItMy41LS40LTMuNS0yLjEgMC0yLjgtMi44LS44LTMuMyAxLjYtLjQgMS42LS41IDAtLjYtMS4xLS4xLTEuNS0uNi0xLjItMS42LjctMS43IDMuMy0yLjEgMy41LS41LjEuNS4yIDEuNi4zIDIuMiAwIC43LjkgMS40IDEuOSAxLjYgMi4xLjQgMi4zLTIuMy4yLTMuMi0uOC0uMy0yLTEuNy0yLjUtMy4xLTEuMS0zLTMtMy4zLTMtLjUiLz48L3N2Zz4=)](https://langgraph-studio.vercel.app/templates/open?githubUrl=https://github.com/langchain-ai/langgraph-fullstack-python)
+An AI shipment-support prototype built with Python, Gemini, LangGraph,
+FastHTML and SQLite.
 
-This template demonstrates how to build a full-stack chatbot application using LangGraph's HTTP configuration capabilities. It showcases how to combine a React-style agent with a modern web UI, all hosted within a single LangGraph deployment.
+ShipmentOps retrieves synthetic tracking records, explains delivery
+exceptions and recommends a next action. Users can review and confirm
+a demo support ticket, which is stored locally in SQLite.
 
-## Key Features
+## Features
 
-- 🌐 **Single Deployment** - Host both your agent and UI in one LangGraph deployment
-- 🎨 **Modern UI** - Beautiful chat interface built with FastHTML
-- 🔄 **React-Style Agent** - Intelligent chatbot using LangGraph's React agent pattern
-- 🛠️ **Easy Configuration** - Simple HTTP routing setup through `langgraph.json`
-- ⚡ **Fast Development** - Rapid prototyping with FastHTML's server-side components
+- Tool-based shipment lookup through a LangGraph agent.
+- Answers grounded in synthetic tracking events.
+- Handling for unknown shipment IDs.
+- Persistent SQLite shipment and ticket storage.
+- Review-and-confirm interface for ticket creation.
+- Duplicate prevention: repeated submissions return the existing ticket.
+- Basic automated evaluations with saved answers, tool calls and latency.
 
-## How It Works
+## Demo scenarios
 
-### HTTP Configuration
+| Shipment | Scenario |
+|---|---|
+| SHP1001 | Delivered shipment |
+| SHP1002 | Failed delivery caused by an incomplete address |
+| SHP9999 | Unknown shipment |
 
-The magic happens in `langgraph.json`, where we configure both the agent and HTTP routes:
+Try:
 
-```json
-{
-  "dependencies": ["."],
-  "graphs": {
-    "agent": "./src/react_agent/graph.py:graph"
-  },
-  "http": {
-    "app": "./src/react_agent/app.py:app"
-  }
-}
-```
+- “What is the status of SHP1001?”
+- “Why is SHP1002 delayed, and what should support do next?”
+- “Where is SHP9999?”
 
-This configuration:
-1. Defines the agent graph in `graph.py`
-2. Sets up HTTP routes through FastHTML in `app.py`
+To create a ticket, enter SHP1002 in the ticket section, select
+**Review ticket**, then **Confirm ticket creation**.
 
-### FastHTML UI
+Tickets are local demo records. No customer or carrier is contacted.
 
-The UI is built using FastHTML, a lightweight server-side component framework. Key features:
+## Architecture
 
-- Modern chat interface using DaisyUI components
-- Real-time message updates
-- Clean, responsive design
+The FastHTML interface sends chat requests to the LangGraph server.
+The Gemini-powered agent calls `get_shipment`, which retrieves a
+record from SQLite.
 
-### LangGraph Agent
+Ticket creation uses separate web routes. SQLite operations in those
+async routes run in worker threads. A unique shipment constraint
+prevents duplicate tickets.
 
-The chatbot uses LangGraph's React agent pattern, which:
+## Run locally
 
-- Processes messages through a Claude 3 model
-- Maintains conversation state
-- Can be easily extended with custom tools
-
-## Getting Started
-
-Install the dependencies:
+Requires Python 3.12 and uv.
 
 ```bash
-pip install uv
-uv sync --dev 
+git clone https://github.com/sanidhyakalta18/shipmentops.git
+cd shipmentops
+uv sync --dev --python 3.12
 ```
 
-Then run the local server:
+Create a `.env` file in the project root:
+
+```env
+GOOGLE_API_KEY=your_key_here
+LANGSMITH_TRACING=false
+```
+
+Start the development server:
+
 ```bash
 uv run langgraph dev --no-browser
 ```
 
-Visit `http://localhost:2024` to interact with your chatbot!
+Open http://127.0.0.1:2024.
 
-## Customization
+The application creates `shipmentops.db` and seeds missing demo
+shipments automatically.
 
-### Modify the Agent
+## Evaluations
 
-Edit `src/react_agent/graph.py` to:
-- Change the system prompt
-- Add custom tools
-- Modify the agent's behavior
+```bash
+uv run python evaluate.py
+```
 
-### Customize the UI
+Results are saved in `evaluation_report.json`.
 
-Edit `src/react_agent/app.py` to:
-- Update the chat interface
-- Add new components
-- Modify styling
+The initial run passed 5/5 basic regression checks covering:
 
-## Next Steps
+1. Delivered shipment status.
+2. Delivery exception explanation.
+3. Recommended next action.
+4. Unknown shipment handling.
+5. Lowercase shipment IDs.
 
-- Add persistent storage for chat history
-- Implement custom tools for your agent
-- Enhance the UI with additional features
-- Deploy to production using LangGraph Platform
+These checks inspect tool calls and expected answer phrases.
+They are not a comprehensive factual-accuracy benchmark.
+Valid paraphrases may fail keyword checks, and incorrect answers
+may still pass. Review the saved answers manually.
 
-For more examples and detailed documentation:
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph)
-- [FastHTML Documentation](https://fasthtml.readme.io)
-- [DaisyUI Components](https://daisyui.com/components)
+## Project files
 
+- `src/react_agent/graph.py`: model and agent instructions.
+- `src/react_agent/tools.py`: shipment lookup tool and seed records.
+- `src/react_agent/database.py`: SQLite shipment storage.
+- `src/react_agent/tickets.py`: persistent demo ticket creation.
+- `src/react_agent/app.py`: chat interface and ticket routes.
+- `evaluate.py`: evaluation runner.
+- `evaluation_report.json`: recorded evaluation results.
 
-<!--
-Configuration auto-generated by `langgraph template lock`. DO NOT EDIT MANUALLY.
-{
-  "config_schemas": {
-    "agent": {
-      "type": "object",
-      "properties": {
-        "model": {
-          "type": "string",
-          "default": "anthropic/claude-3-5-sonnet-20240620",
-          "description": "The name of the language model to use for the agent's main interactions. Should be in the form: provider/model-name.",
-          "environment": [
-            {
-              "value": "anthropic/claude-1.2",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "anthropic/claude-2.0",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "anthropic/claude-2.1",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "anthropic/claude-3-5-sonnet-20240620",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "anthropic/claude-3-haiku-20240307",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "anthropic/claude-3-opus-20240229",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "anthropic/claude-3-sonnet-20240229",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "anthropic/claude-instant-1.2",
-              "variables": "ANTHROPIC_API_KEY"
-            },
-            {
-              "value": "openai/gpt-3.5-turbo",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-3.5-turbo-0125",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-3.5-turbo-0301",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-3.5-turbo-0613",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-3.5-turbo-1106",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-3.5-turbo-16k",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-3.5-turbo-16k-0613",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-0125-preview",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-0314",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-0613",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-1106-preview",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-32k",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-32k-0314",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-32k-0613",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-turbo",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-turbo-preview",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4-vision-preview",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4o",
-              "variables": "OPENAI_API_KEY"
-            },
-            {
-              "value": "openai/gpt-4o-mini",
-              "variables": "OPENAI_API_KEY"
-            }
-          ]
-        }
-      },
-      "environment": [
-        "TAVILY_API_KEY"
-      ]
-    }
-  }
-}
--->
+## Current limitations
+
+- Two synthetic shipment records; no live carrier integration.
+- Local development prototype; public deployment is pending.
+- No production authentication or access controls.
+- Tickets represent one demo exception per shipment.
+- Conversation persistence is managed by the development runtime.
+- Prompt instructions reduce unsupported claims but do not guarantee
+  that every answer is correct.
+
+## Attribution
+
+Adapted from LangChain's MIT-licensed full-stack Python starter:
+
+https://github.com/langchain-ai/langgraph-fullstack-python
+
+Project additions include Gemini integration, the shipment-support
+workflow, SQLite storage, confirmed ticket creation, duplicate
+prevention and basic evaluations. Development used AI assistance.
+
+The original license and copyright notices are retained.
