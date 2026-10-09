@@ -3,7 +3,7 @@
 import sqlite3
 import uuid
 from contextlib import closing
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from react_agent.database import DB_PATH, find_shipment
 
@@ -21,7 +21,7 @@ def create_ticket(shipment_id: str) -> dict:
 
     ticket_id = f"TKT-{uuid.uuid4().hex[:10].upper()}"
     reason = shipment["events"][-1]["event"]
-    created_at = datetime.now(timezone.utc).isoformat()
+    created_at = datetime.now(UTC).isoformat()
 
     with closing(sqlite3.connect(DB_PATH, timeout=10)) as connection:
         connection.row_factory = sqlite3.Row

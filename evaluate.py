@@ -1,8 +1,9 @@
+# ruff: noqa: T201
 """Run basic ShipmentOps agent evaluations and save a report."""
 
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from react_agent.graph import graph
@@ -49,6 +50,7 @@ CASES = [
 
 
 def extract_text(content):
+    """Extract text from an evaluation response."""
     if isinstance(content, str):
         return content
 
@@ -63,6 +65,7 @@ def extract_text(content):
 
 
 def run_evaluations():
+    """Run regression checks and save their results."""
     results = []
 
     for case in CASES:
@@ -130,7 +133,7 @@ def run_evaluations():
     errors = sum(result["error"] is not None for result in results)
 
     report = {
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
         "evaluation_type": "Basic tool-use and keyword regression checks",
         "limitations": (
             "Five synthetic cases; keyword checks can miss semantic "

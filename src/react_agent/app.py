@@ -4,18 +4,25 @@ import logging
 import uuid
 
 from fasthtml.common import (
-    A, Button, Div, FastHTML, Form, H1, H2,
-    Input, P, Style, Title,
+    H1,
+    H2,
+    A,
+    Button,
+    Div,
+    FastHTML,
+    Form,
+    Input,
+    P,
+    Style,
+    Title,
 )
 from langgraph_sdk import get_client
 from starlette.responses import RedirectResponse
 
-from react_agent.database import find_shipment
-from react_agent.tickets import create_ticket
-
 # Importing tools initializes the synthetic shipment database.
 from react_agent import tools  # noqa: F401
-
+from react_agent.database import find_shipment
+from react_agent.tickets import create_ticket
 
 client = get_client()
 
@@ -88,6 +95,7 @@ app = FastHTML(hdrs=(styles,))
 
 
 def message_bubble(content: str, is_user: bool = False):
+    """Render a chat message as safely escaped text."""
     label = "You" if is_user else "ShipmentOps"
     kind = "user" if is_user else "assistant"
     return Div(
@@ -98,6 +106,7 @@ def message_bubble(content: str, is_user: bool = False):
 
 
 def content_to_text(content):
+    """Extract text from a model response."""
     if isinstance(content, str):
         return content
     if isinstance(content, list):
@@ -111,6 +120,7 @@ def content_to_text(content):
 
 @app.get("/")
 async def home():
+    """Redirect to a new conversation."""
     return RedirectResponse(
         f"/conversations/{uuid.uuid4()}",
         status_code=302,
@@ -119,6 +129,7 @@ async def home():
 
 @app.get("/conversations/{thread_id}")
 async def conversation(thread_id: str):
+    """Display the conversation and ticket interface."""
     await client.threads.create(
         thread_id=thread_id,
         if_exists="do_nothing",
@@ -201,6 +212,7 @@ async def conversation(thread_id: str):
 
 @app.post("/conversations/{thread_id}/send-message")
 async def send_message(thread_id: str, msg: str):
+    """Send a message to the shipment agent."""
     msg = msg.strip()
     if not msg:
         return ""
@@ -238,39 +250,11 @@ async def send_message(thread_id: str, msg: str):
         )
 
 
-@app.post("/tickets/preview")
-async def preview_ticket(shipment_id: str):
-    shipment_id = shipment_id.strip().upper()
-    shipment = find_shipment(shipment_id)
-
-    if shipment is None:
-        return P("Shipment not found. No ticket created.")
-
-    if shipment["status"] == "delivered":
-        return P("Shipment is delivered. No exception ticket needed.")
-
-    return Div(
-        P(f"Shipment: {shipment_id}"),
-        P(f"Reason: {shipment['events'][-1]['event']}"),
-        P(f"Recommended action: {shipment['recommended_action']}"),
-        P("Confirm to save a demo ticket in your local database."),
-        Form(
-            Input(
-                type="hidden",
-                name="shipment_id",
-                value=shipment_id,
-            ),
-            Button("Confirm ticket creation", type="submit"),
-            hx_post="/tickets/create",
-            hx_target="#ticket-result",
-            hx_swap="innerHTML",
-            hx_disabled_elt="find button",
-        ),
-    )
 
 
 @app.post("/tickets/preview")
 async def preview_ticket(shipment_id: str):
+    """Show ticket details before confirmation."""
     from starlette.concurrency import run_in_threadpool
 
     shipment_id = shipment_id.strip().upper()
@@ -304,6 +288,7 @@ async def preview_ticket(shipment_id: str):
 
 @app.post("/tickets/create")
 async def confirm_ticket(shipment_id: str):
+    """Save a confirmed demo ticket."""
     from starlette.concurrency import run_in_threadpool
 
     ticket = await run_in_threadpool(create_ticket, shipment_id)
