@@ -1,0 +1,110 @@
+{
+  "created_at": "2026-10-09T07:19:00.805511+00:00",
+  "evaluation_type": "Basic tool-use and keyword regression checks",
+  "limitations": "Five synthetic cases; keyword checks can miss semantic errors or reject valid paraphrases. Review answers manually. This does not measure overall factual accuracy.",
+  "total_cases": 5,
+  "passed": 5,
+  "api_or_runtime_errors": 0,
+  "results": [
+    {
+      "name": "Delivered shipment",
+      "question": "What is the status of SHP1001?",
+      "passed": true,
+      "correct_tool_lookup": true,
+      "content_check": true,
+      "answer": "Based on the synthetic shipment record (SHP1001), the shipment status is **delivered**. \n\n* **Relevant tracking event:** \"Delivered\" at 2026-10-08 14:30 IST.\n* **Recommended action:** No delivery action required.\n\n*Please note: This data is synthetic and comes from demo records stored in SQLite.*",
+      "tool_calls": [
+        {
+          "name": "get_shipment",
+          "args": {
+            "shipment_id": "SHP1001"
+          },
+          "id": "call_713936",
+          "type": "tool_call"
+        }
+      ],
+      "error": null,
+      "latency_seconds": 2.96
+    },
+    {
+      "name": "Delivery exception",
+      "question": "Why is SHP1002 delayed?",
+      "passed": true,
+      "correct_tool_lookup": true,
+      "content_check": true,
+      "answer": "Based on the synthetic demo records, shipment SHP1002 is currently experiencing a delivery exception with the status \"delivery_exception\". \n\nThis delay is due to the tracking event: **\"Delivery failed: incomplete address\"** recorded on 2026-10-08 at 16:00 IST. \n\n**Recommended Action:**\nContact the customer to confirm the complete address, then request a delivery reattempt from the carrier (DemoExpress). *(Please note: As a demo assistant, I cannot execute these actions for you; this is a suggestion based on the data.)*\n\n*(Note: This data is synthetic and stored in SQLite.)*",
+      "tool_calls": [
+        {
+          "name": "get_shipment",
+          "args": {
+            "shipment_id": "SHP1002"
+          },
+          "id": "call_511795",
+          "type": "tool_call"
+        }
+      ],
+      "error": null,
+      "latency_seconds": 2.77
+    },
+    {
+      "name": "Recommended next action",
+      "question": "What should support do next for SHP1002?",
+      "passed": true,
+      "correct_tool_lookup": true,
+      "content_check": true,
+      "answer": "Based on the synthetic demo records, shipment SHP1002 has a status of `delivery_exception`. \n\nThe latest tracking event is **\"Delivery failed: incomplete address\"** on 2026-10-08 at 16:00 IST.\n\n**Recommended action:**\nContact the customer to confirm the complete address, then request a delivery reattempt from the carrier. (Please note that support cannot execute these steps directly.)\n\n*Note: This data is synthetic.*",
+      "tool_calls": [
+        {
+          "name": "get_shipment",
+          "args": {
+            "shipment_id": "SHP1002"
+          },
+          "id": "call_581899",
+          "type": "tool_call"
+        }
+      ],
+      "error": null,
+      "latency_seconds": 2.57
+    },
+    {
+      "name": "Unknown shipment",
+      "question": "Where is SHP9999?",
+      "passed": true,
+      "correct_tool_lookup": true,
+      "content_check": true,
+      "answer": "No matching shipment exists for ID SHP9999 in the synthetic demo dataset. Please provide a valid shipment ID if you would like me to check another record.",
+      "tool_calls": [
+        {
+          "name": "get_shipment",
+          "args": {
+            "shipment_id": "SHP9999"
+          },
+          "id": "call_745990",
+          "type": "tool_call"
+        }
+      ],
+      "error": null,
+      "latency_seconds": 2.34
+    },
+    {
+      "name": "Lowercase shipment ID",
+      "question": "Please check shipment shp1002.",
+      "passed": true,
+      "correct_tool_lookup": true,
+      "content_check": true,
+      "answer": "For shipment **SHP1002** (handled by DemoExpress using synthetic data from our demo records), the current status is **delivery exception**. \n\nThe latest tracking event is **\"Delivery failed: incomplete address\"** on 2026-10-08 at 16:00 IST (preceded by pickup on 2026-10-07 and out for delivery on 2026-10-08).\n\n**Recommended action:** Contact the customer to confirm the complete address, then request a delivery reattempt from the carrier. *(Note: As a support assistant, I can suggest this action, but I cannot execute it, contact customers, or update addresses directly.)*",
+      "tool_calls": [
+        {
+          "name": "get_shipment",
+          "args": {
+            "shipment_id": "shp1002"
+          },
+          "id": "call_512123",
+          "type": "tool_call"
+        }
+      ],
+      "error": null,
+      "latency_seconds": 6.29
+    }
+  ]
+}
